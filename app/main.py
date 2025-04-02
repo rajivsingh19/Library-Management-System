@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from app.database import engine, Base
 from app.routes import  librarian
 
-# Initialize FastAPI App
+
 app = FastAPI(title="Library Book Management System", version="1.0")
 
 # Create Database Tables
