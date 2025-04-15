@@ -5,8 +5,6 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-# DATABASE_URL = "postgresql://postgres:root@localhost:5432/authen"
-
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:root@localhost:5432/library_db")
 
 engine = create_engine(DATABASE_URL)

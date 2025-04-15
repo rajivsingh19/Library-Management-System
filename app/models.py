@@ -4,30 +4,33 @@ import uuid
 from .database import Base
 from sqlalchemy.orm import relationship
 
-class Admin(Base):
-    __tablename__ = "admin"
+
+
+class User(Base):
+    __tablename__ = "users"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
-    password_encrypted = Column(String)  # Storing encrypted password
-    role = Column(String, default="librarian")  # "admin"
+    password_encrypted = Column(String, nullable=False)
+    role = Column(String, default="member")  # Can be "admin" or "member"
     is_active = Column(Boolean, default=True)
 
-# 📌 Library Member Model
-class Member(Base):
-    __tablename__ = "members"
+class AccessControl(Base):
+    __tablename__ = "access_control"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-    password_encrypted = Column(String)  # Storing encrypted password
-    role = Column(String, default="member")  # Explicitly setting role
-    is_active = Column(Boolean, default=True)
+    role = Column(String, nullable=False)
+    resource = Column(String, nullable=False)  # e.g., "book"
+    action = Column(String, nullable=False)    # e.g., "create", "read", "update", "delete"
+   
+class UserPermission(Base):
+    __tablename__ = "user_permissions"
 
-    # Relationships
-    borrowings = relationship("Borrowing", back_populates="member")
-
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    resource = Column(String, nullable=False)
+    action = Column(String, nullable=False)
 # 📌 Book Model
 class Book(Base):
     __tablename__ = "books"
@@ -37,7 +40,6 @@ class Book(Base):
     author = Column(String, nullable=False)
     isbn = Column(String, unique=True, nullable=False)
     is_available = Column(Boolean, default=True)
-
     # Relationship
     borrowings = relationship("Borrowing", back_populates="book")
 
@@ -46,12 +48,10 @@ class Borrowing(Base):
     __tablename__ = "borrowings"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    member_id = Column(UUID(as_uuid=True), ForeignKey("members.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     book_id = Column(UUID(as_uuid=True), ForeignKey("books.id"), nullable=False)
     borrowed_at = Column(DateTime, default=datetime.utcnow)
+    is_return_requested = Column(Boolean, default=False) 
     returned_at = Column(DateTime, nullable=True)
-
-    # Relationships
-    member = relationship("Member", back_populates="borrowings")
     book = relationship("Book", back_populates="borrowings")
 
